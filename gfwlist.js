@@ -3838,9 +3838,7 @@ var rules = [
   "||bbc.co.uk", 
   "||googleapis.com", 
   "||googlesyndication.com", 
-  ".google.com.hk/*",
-  "https://www.google.com.hk/*",
-  "www.google.com.hk/*",
+  "|https://www.google.com.hk/*",
   "||stackovergithubflow.com",
   "||wikipedia.org", 
   "||userdefined.com", 
@@ -3851,7 +3849,8 @@ var rules = [
   "||cloudfront.net", 
   "@@userdefined.whitelist.com",
   "|https://mega.co.nz/*",
-  "imap.gmail.com"
+  "|imap.gmail.com",
+  "|https://www.digitalocean.com/community/"
 ];
 
 /*
