@@ -631,6 +631,7 @@ var rules = [
   "||weigegebyc.dreamhosters.com", 
   "||drgan.net", 
   "||dropbox.com", 
+  "|https://www.dropbox.com/*"
   "||dropboxusercontent.com", 
   ".drtuber.com", 
   "||dtiblog.com", 
