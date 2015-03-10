@@ -6970,7 +6970,6 @@ var white_domains = {"am":{
 "uzai":1,
 "uzaicdn":1,
 "uzzf":1,
-"v2ex":1,
 "v312":1,
 "v3gp":1,
 "value500":1,
