@@ -3596,10 +3596,6 @@ var white_domains = {"am":{
 "goocun":1,
 "goodbaby":1,
 "goodkejian":1,
-"google-analytics":1,
-"googleadservices":1,
-"googlesyndication":1,
-"googletagmanager":1,
 "googvv":1,
 "gooioo":1,
 "gooniu":1,
@@ -9594,6 +9590,7 @@ var white_domains = {"am":{
 "shiqian":1,
 "wasu":1,
 "weihai":1,
+"cc98":1,
 "zhenping":1,
 "zohi":1
 },"tw":{
