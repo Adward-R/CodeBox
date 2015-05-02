@@ -1,0 +1,267 @@
+* CH01 - Course Overview & Arch Patterns
+** Architecture is a set of software structures
+   No single structure holds claim to being the architecture.
+   Includes behavior and interactions among system-level components
+** Three important categories of architecture
+   Module structures
+   Component-and-connector structures
+   Allocation structures
+** Common Patterns
+*** Pipes and Filters
+    A structure for systems that process a stream of data
+    e.g. Compilers, Unix Shell Programs, Batch Sequential System
+    Main Pro: Clean design
+    Main Con: Sharing state information is expensive or inflexible
+*** OO
+    Main Con: Identity: need to know (import) an object/method’s name (explicit invocation)
+*** Event Based System
+    Main Con: No control over order of invocation
+*** Layered System
+*** Intepreters
+* CH02 - Contexts of Soft Arch & Arch Structures
+** Architecture in a Project Life-Cycle Context
+   Waterfall, Iterative, Agile, Model-driven development
+   Evolutionary Delivery Life-Cycle: Design of [Architecture and System Core Cycle] -> [Develop Cycle] is a no back arrow
+** Stakeholders and their interest in arch
+   Architect, deployer, designer, implementer, integrator, maintainer, project manager, tester, user
+** Groups of Soft-Arch Structures
+*** Module Structures
+    Decomposition, Uses, Layered, Class, Data model
+*** Component-and-connector Structure
+    Client-server, Concurrency, Process, Service
+*** Allocation Structure
+    Work assignment, Deployment, Implementation
+* CH03 - Quality Attributes
+** An arch is shaped by:
+   - Functional requirements
+   - Quality attributes requirements
+   - Constriants
+** Arch and quality attributes
+   - It is the mapping of a system's functionality onto software structures that determines the architecture's support for qualities.
+     (Quality attributes dictate a software system's architecture.)
+   - No quality attribute is entirely dependent on design or other phases.
+** QAS (Quality Attr Scenarios)
+*** Types of Quality Attr
+   - Describing system properties at runtime: availability, interoperability, performance, security, usability
+   - Describing system properties during development: modifiability, testability
+*** QAS
+    Source of Stimulus -> Stimulus -> Artifact (Environment) -> Response -> Response Measure
+*** Tactics
+**** A tactic is a design decision that influences the control of a quality attribute response
+**** Tactics VS. Patterns
+     - The focus of a tactic is on a single quality attribute response, i.e. no consideration of tradeoffs
+     - In contrast, tradeoffs are built into patterns
+     - While patterns are difficult to apply, tactics are more accessible options for architects.
+     - Architects can use tactic to construct patterns
+** Guiding quality design decisions
+   - Allocation of responsibilities
+   - Coordination model
+   - Data model
+   - Management of resources
+   - Mapping among architectural elements
+   - Binding time decisions
+   - Choice of technology
+* CH04&05 - Tactics for Availability
+  Availability = reliability + recovery
+** Fault Detection
+*** Ping/echo
+*** Monitor & Watchdog & Heartbeat
+*** Timestamp
+*** Sanity Checking & Condition Monitoring
+*** Voting
+*** Exception Detection
+*** Selftest
+** Recovery from fault: Recovery Preparation and Repair
+*** Active Redundancy (Hot Spare)
+*** Passive Redundancy (Warm Spare)
+*** Spare (Cold Spare)
+*** Exception Handling
+*** Rollback
+*** Retry
+*** Ignore Faulty Behavior
+*** Degradation
+*** Reconfiguration
+** Recovery from fault: Recovery Reintroduction
+*** Shadow
+*** State Resync
+*** Escalating Restart
+*** Non-stop Forwarding
+    - When the supervisory part in a router fails, NSF tactic dictates that the packet routing part shall forward packets to the known neighboring routers
+    - Meanwhile, the supervisory part is recovered using "graceful restart"
+** Prevention
+*** Removal from Service
+*** Transactions: Two Phase Commit, etc
+*** Predictive Model
+*** Exception Prevention
+*** Increase Competence Set
+    Employ more tolerance in component design, i.e. make it handle more cases and reduce the exceptions thrown
+
+* CH06 - Tactics for Interoperability
+** Taxomony
+*** Component-based Development
+*** Service-Oriented Computing
+    SOA: Service-Provider, -Register, -Client
+*** Web Service: Special SOC
+*** System of Systems (SoS)
+    Directed; Acknowledged; Collaborative; Virtual
+** Issue: Interface Mismatch
+   Architectural mismatch treated as a special case of interface mismatch.
+*** Techniques for reparing interface mismatch
+**** Insert code for reconciliation
+     - Wrappers
+     - Bridges
+     - Mediators: Results in runtime determination of the translation; intelligence and dynamic behaviors can be implemented in mediators.
+** Interoperability
+   Syntactc: the ability to exchange data
+   Semantic: the ability to correctly interpret the data being exchanged
+*** Two catogories of interoperability tactics
+**** Locate: Discover Service
+**** Manage Interfaces: Orchestra
+     - Simple orchestration: mediator design pattern
+     - Complex: specified in language such as BPEL (workflow engine, etc)
+    
+**** Manage Interfaces: Tailer Interface
+     Adding or removing capabilities
+* CH07 - Design for Modifiability
+** Change-planning equation
+   For N similar modifications, a simplified justification for a change-handling mechanism:
+       N * Cost of making the change without the mechanism < Cost of installing the mechanism + (N * Cost of making the change using the mechanism)
+   N is the expected number of modifications
+** Modifiability Tactics
+*** Reduce size of a module
+**** Split Module
+*** Increase Cohesion
+**** Increase Semantic Cohesion
+*** Reduce Coupling
+**** Encapsulate
+**** Use an intermediary
+**** Restrict Dependencies
+**** Refactor
+**** Abstract Common Services
+*** Defer Binding
+**** Defer binding tactics at compile time or build time:
+     - Component replacement (for example, in a build script or make file)
+     - Compile-time parameterization
+**** Tactics to bind values at deployment time include:
+     - Configuration-time binding
+**** Tactics to bind values at startup or initialization time include:
+     - Resource files
+**** Tactics to bind values at runtime include these:
+     - Runtime registration
+     - Dynamic lookup (e.G., For Services)
+     - Interpret Parameters
+     - Startup Time Binding
+     - Name Servers
+     - Plug-Ins
+      -Publish-Subscribe
+     - Shared Repositories
+     - Polymorphism
+
+ 
+
+   
+
+  
+* CH08 - Tactics for Performance
+** Response Measures
+*** Latency
+*** Deadlines in Processing
+*** Throughout
+*** Jitter
+*** Miss Rate (Events not processed when the system was too busy)
+** Two Contributors to the Response Time
+*** Processing Time
+*** Blocked Time
+    Being blocked because of:
+    - Resource unavailability
+    - Dependency on other computation: synchronization, waiting for results
+** Performance Tactics
+*** Control Resource Demand
+**** Manage Sampling Rate
+**** Limit Event Response
+**** Prioritize Events
+**** Reduce Overhead
+**** Bound Execution 
+**** Increase Resource Efficiency
+*** Manage Resource
+**** Increase Resources
+**** Introduce Concurrency
+**** Maintain Multiple Copies of Computations
+**** Maintain Multiple Copies of Data
+**** Bound Queue Sizes
+**** Schedule Resources
+* CH09&10 - Tactics for Security
+  confidentiality, integrity, availability, authentication, nonrepudiation, authorization
+** Resist attacks
+*** Detect Intrusion
+*** Detect service denial
+*** Verify message integrity
+*** Detect message delay
+** Detect attacks
+*** Identify actors
+*** Authenticate actors
+*** Authorize actors
+*** Limit access
+*** Limit exposure
+    - Memory protection, blocking a host, closing a port, or rejecting a protocol etc.
+    - Firewalls (source, destination port)
+    - DMZ – demilitarized zone: access to Web but not to the rest of the LAN
+*** Encrypt data
+*** Separate entities
+*** Change default settings
+** React to attacks
+*** Revoke access
+*** Lock computer
+*** Inform actors
+** Recover from attacks
+*** Maintain audit trail
+*** Restore -> see availability
+* CH10&11 - Tactics for Testablity
+** Testability
+*** Controllability
+    - Be able to control each component’s inputs
+    - Sometimes also need to manipulate its internal state
+*** Observability
+    - Be able to observe its outputs
+    - Sometimes also need to observe its internal state
+*** (Operability, decomposability, stability, understandability)
+*** (Testing is usually performed using a test harness)
+** Tactics
+*** Control and observe system state
+**** Specialized interface
+     Allows the capturing or specification of variable values for a component through a test harness or through its normal execution.
+**** Record / playback
+**** Localize state storage
+**** Abstract data resources
+**** Sandbox
+     Isolates untested code changes and experimentation from the production environment or repository;
+     The sandbox typically provides a tightly controlled set of virtualized resources for running tests.
+**** Executable assertions
+**** (Component Replacement Technique)
+*** Limit complexity
+**** Limit structural complexity
+     Reducing dependencies, avoid cyclic dependencies, isolating, encapsulating
+**** Limit non-determinism
+* CH11 - Tactics for Usability
+** Dimensions of usability
+    - Learning system features
+    - Using the system efficiently
+    - Minimizing the impact of errors
+    - Adapting the system to the user’s needs
+    - Increasing confidence and satisfaction
+** Tactics
+*** Support user initiative (user issue requests)
+    correcting user errors or improving user efficiency
+**** Cancel
+**** Undo
+**** Pause / Resume
+**** Aggregation
+*** Support system initiative ("Wizard")
+    rely on a model of the user, the task  or the system state itself
+**** Maintain task model
+**** Maintain user model
+**** Maintain system model
+
+
+
+
