@@ -2,20 +2,44 @@
 ** Architecture is a set of software structures
    No single structure holds claim to being the architecture.
    Includes behavior and interactions among system-level components
-** Three important categories of architecture
-   Module structures
-   Component-and-connector structures
-   Allocation structures
+** Three important categories of architecture (and affect attr)
+*** Module structures
+**** Decomposition
+     modifiability, understandablity
+**** Uses
+     reusability, testability, incremental development
+**** Layered
+     portability
+**** Class (to exploit similarity among classes)
+     reusability, incremental addition of functionality
+**** Data model (to describe static info structure)
+     None
+*** Component-and-connector structures
+**** Service
+     performance, modifiability
+**** Concurrency
+     parallelism, performance
+**** (communicating) Process
+     performance
+**** Client-server
+     performance, modifiability
+*** Allocation structures
+**** Deployment Structure
+     [[To reason]] about performance, data integrity, availability, and security
+**** Implementation Structure
+     [[To manage]] development activity, to configure, integrate and test software modules
+**** Work Assignment Structure
+     [[To assist]] project management, to enable best use of expertise and to manage commonality
 ** Common Patterns
 *** Pipes and Filters
-    A structure for systems that process a stream of data
-    e.g. Compilers, Unix Shell Programs, Batch Sequential System
-    Main Pro: Clean design
-    Main Con: Sharing state information is expensive or inflexible
+    - A structure for systems that process a stream of data
+      e.g. Compilers, Unix Shell Programs, Batch Sequential System
+    - Main [[Pro]]: Clean design
+    - Main [[Con]]: Sharing state information is expensive or inflexible
 *** OO
-    Main Con: Identity: need to know (import) an object/method’s name (explicit invocation)
+    Main [[Con]]: Identity -> need to know (import) an object/method’s name (explicit invocation)
 *** Event Based System
-    Main Con: No control over order of invocation
+    Main [[Con]]: No control over order of invocation
 *** Layered System
 *** Intepreters
 * CH02 - Contexts of Soft Arch & Arch Structures
@@ -25,12 +49,7 @@
 ** Stakeholders and their interest in arch
    Architect, deployer, designer, implementer, integrator, maintainer, project manager, tester, user
 ** Groups of Soft-Arch Structures
-*** Module Structures
-    Decomposition, Uses, Layered, Class, Data model
-*** Component-and-connector Structure
-    Client-server, Concurrency, Process, Service
-*** Allocation Structure
-    Work assignment, Deployment, Implementation
+   (Stated in CH1) Module Structures, Component-and-connector Structure, Allocation Structure
 * CH03 - Quality Attributes
 ** An arch is shaped by:
    - Functional requirements
@@ -156,12 +175,6 @@
       -Publish-Subscribe
      - Shared Repositories
      - Polymorphism
-
- 
-
-   
-
-  
 * CH08 - Tactics for Performance
 ** Response Measures
 *** Latency
@@ -261,6 +274,34 @@
 **** Maintain task model
 **** Maintain user model
 **** Maintain system model
+* CH12 - Designing an Arch
+** Architecturally Significant Requirements
+   - Functional requirements
+   - Quality requirements
+   - Business requirements
+** Attribute Driven Design (ADD)
+*** Inputs
+**** A set of ASRs
+     - Functional requirements as use cases
+     - Quality requirements expressed as system-specific quality scenarios
+     - Constraints
+**** A context description
+     - Boundaries
+     - External factors to interact with
+*** Outputs
+**** A set of sketches of architectural VIEWS 
+     Module-decomposition views and other if appropriate
+**** The system is described as a set of CONTAINERS for functionality and the interactions among them
+*** Refinement Strategies
+**** Depth first
+     Prototyping with the risky part, etc
+**** Breadth first
+     Personnel availability, etc
+     Generally preferred:
+     - apportion the most work to the most teams soonest
+     - consideration of the interaction among the elements at the same level
+
+
 
 
 
