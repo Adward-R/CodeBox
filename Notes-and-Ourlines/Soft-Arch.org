@@ -87,8 +87,11 @@
 *** Monitor & Watchdog & Heartbeat
 *** Timestamp
 *** Sanity Checking & Condition Monitoring
+    e.g. checksum
 *** Voting
+    Processes running on redundant processors each take the equivalent input, compute  and report a simple output to a “voter”
 *** Exception Detection
+    e.g. timeout
 *** Selftest
 ** Recovery from fault: Recovery Preparation and Repair
 *** Active Redundancy (Hot Spare)
@@ -99,13 +102,14 @@
 *** Retry
 *** Ignore Faulty Behavior
 *** Degradation
+    Processes running on redundant processors each take the equivalent input, compute  and report a simple output to a “voter”
 *** Reconfiguration
 ** Recovery from fault: Recovery Reintroduction
 *** Shadow
 *** State Resync
 *** Escalating Restart
 *** Non-stop Forwarding
-    - When the supervisory part in a router fails, NSF tactic dictates that the packet routing part shall forward packets to the known neighboring routers
+    - When the supervisory part in a [[router]] fails, NSF tactic dictates that the packet routing part shall forward packets to the known neighboring routers
     - Meanwhile, the supervisory part is recovered using "graceful restart"
 ** Prevention
 *** Removal from Service
@@ -166,13 +170,13 @@
 **** Tactics to bind values at startup or initialization time include:
      - Resource files
 **** Tactics to bind values at runtime include these:
-     - Runtime registration
-     - Dynamic lookup (e.G., For Services)
+     - Runtime Registration
+     - Dynamic Lookup (e.g., For Services)
      - Interpret Parameters
      - Startup Time Binding
      - Name Servers
      - Plug-Ins
-      -Publish-Subscribe
+     - Publish-Subscribe
      - Shared Repositories
      - Polymorphism
 * CH08 - Tactics for Performance
@@ -270,7 +274,7 @@
 **** Pause / Resume
 **** Aggregation
 *** Support system initiative ("Wizard")
-    rely on a model of the user, the task  or the system state itself
+    rely on a model of the user, the task or the system state itself
 **** Maintain task model
 **** Maintain user model
 **** Maintain system model
