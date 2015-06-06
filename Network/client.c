@@ -10,6 +10,7 @@
 #define QUEUE_SIZE 10
 #define DEFAULT_PORT 12345
 #define CLIENT_PORT 12346
+#define MAX_PORTS 10
 
 /* 
     CONN
@@ -68,13 +69,24 @@ int main() {
             printf("\n");
         }
         else if (!strcmp(cmd, "list")) {
-            //
+            write(sa, "LIST", 5);
+            for (i=0; i<MAX_PORTS; i++) {
+                bytes = read(sa, buf, BUF_SIZE);
+                if (strcmp(buf, "NONE")) {
+                    write(1, buf, bytes);
+                }
+            }
+            printf("\n");
         }
         else if (!strcmp(cmd, "quit")) {
+            write(sa, "DISC", 5);
+            close(sa);
+            printf("Disconnected from remote\n");
+            printf("Quitting...\n");
             exit(0);
         }
         else if (!strcmp(cmd, "conn")) {
-            scanf("%s",hostname);
+            scanf("%s", hostname);
             h = gethostbyname(hostname); //look up host's IP address
             if (!h) printf("gethostbyname failed\n>>> ");
             
@@ -92,8 +104,7 @@ int main() {
                 printf("connect failed with exit code 1\n>>> ");
                 exit(1);
             }
-            
-            
+
             //bind the client port
             if (!isBinded) {
                 //block to wait for the server to connect back
