@@ -27,16 +27,29 @@ void fatal() {
     printf(">>> ");
 }
 
+int sa;
+
+void listen_thread(void *arg) {
+    char ch;
+    printf("thread started\n");
+    while (1) {
+        read(sa, &ch, 2);
+        write(1, &ch, 2);
+//        usleep(30000);
+    }
+}
+
 int main() {
-	int i, j, c, s, _s, sa, b, l, bytes, on = 1, isBinded = 0;
+	int i, j, c, s, _s, b, l, bytes, on = 1, isBinded = 0;
 	char buf[BUF_SIZE]; //buffer for incoming file
+    char ch;
 	struct hostent *h = NULL; //info about server
 	struct sockaddr_in channel; //holds IP address
-    
+    pthread_t send_and_listen;
     //init
     
     char cmd[10];
-    char hostname[BUF_SIZE];
+    char param[BUF_SIZE];
     //int port;
     int scan_num;
     
@@ -86,8 +99,8 @@ int main() {
             exit(0);
         }
         else if (!strcmp(cmd, "conn")) {
-            scanf("%s", hostname);
-            h = gethostbyname(hostname); //look up host's IP address
+            scanf("%s", param);
+            h = gethostbyname(param); //look up host's IP address
             if (!h) printf("gethostbyname failed\n>>> ");
             
             s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -142,9 +155,22 @@ int main() {
             
             //real connection established on "sa"
             printf("Connection established!\n");
+            pthread_create(&send_and_listen, NULL, (void *)listen_thread, NULL);
         }
         else if (!strcmp(cmd, "send")) {
-            //
+            scanf("%s", param);
+            write(sa, "SEND", 5);
+            memset(buf, 0, BUF_SIZE);
+            read(sa, buf, BUF_SIZE);
+            if (strcmp(buf, "PARAM")) {
+                printf("send cmd error\n");
+                continue;
+            }
+            write(sa, param, sizeof(param));
+            printf("You can now send message to client no.%s, end with ENTER :\n", param);
+            while ((ch=getchar())!='\n') {
+                write(sa, &ch, 2);
+            }
         }
         else {
             fatal();

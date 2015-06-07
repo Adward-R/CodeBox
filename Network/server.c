@@ -15,13 +15,17 @@
 #define DEFAULT_PORT 12345
 #define MAX_PORTS 10
 
-int sa;
+int sa; //default socket of server
+char shared; //shared memory in SEND
 //int thread_pool[MAX_PORTS]; //1 for using
 
 struct {
     int using; //1 for using
     struct hostent *h;
-    
+    int s; //socket
+    int in_critical;
+    int send_target;
+    int send_src;
 } thread_pool[MAX_PORTS];
 
 struct thread_param{
@@ -43,69 +47,91 @@ void get_sys_time(char *buf) {
     strftime(buf, BUF_SIZE, "%Y/%m/%d %X %A %z",localtime(&t));
 }
 
+void listen_thread(int *arg) {
+    int self = *arg;
+    printf("Daemon started\n");
+    while (thread_pool[self].using) {
+        if (thread_pool[self].send_target) {
+            if (shared) { //has anything to read
+                write(thread_pool[self].s, &shared, 2);
+                shared = 0;
+            }
+        }
+        else if (thread_pool[self].send_src) {
+            if (!shared) {
+                read(thread_pool[self].s, &shared, 2);
+            }
+
+        }
+    }
+    pthread_exit(0);
+}
+
 void server_thread(struct thread_param *arg) {
-    int i, j, c, s, bytes;
+    int self = arg->i;
+    int i, j, c, bytes;
     char buf[BUF_SIZE], tmp[BUF_SIZE];
-
+    char ch;
     struct sockaddr_in channel; //holds IP address
-
-    printf("thread started\n");
+    pthread_t send_and_listen;
     
-    thread_pool[arg->i].h = gethostbyaddr(&(arg->peer_addr).sin_addr, 4, AF_INET);
-    if (thread_pool[arg->i].h < 0) {
+    thread_pool[self].h = gethostbyaddr(&(arg->peer_addr).sin_addr, 4, AF_INET);
+    if (thread_pool[self].h < 0) {
         printf("gethostbyaddr failed\n");
         //close(sa);
-        thread_pool[arg->i].using = 0;
+        thread_pool[self].using = 0;
         pthread_exit(1);
     }
     
-    s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (s < 0) {
+    thread_pool[self].s = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (thread_pool[self].s < 0) {
         printf("socket failed\n");
         //close(sa);
-        thread_pool[arg->i].using = 0;
+        thread_pool[self].using = 0;
         pthread_exit(1);
     }
     
     memset(&channel, 0, sizeof(channel));
     channel.sin_family = AF_INET;
     memcpy(&channel.sin_addr.s_addr,
-           (thread_pool[arg->i].h)->h_addr,
-           (thread_pool[arg->i].h)->h_length);
+           (thread_pool[self].h)->h_addr,
+           (thread_pool[self].h)->h_length);
     
     //connect back to client on one of default ports
     channel.sin_port = htons(DEFAULT_PORT + 1);
-    c = connect(s, (struct sockaddr *)&channel, sizeof(channel));
+    c = connect(thread_pool[self].s, (struct sockaddr *)&channel, sizeof(channel));
     if (c < 0) {
         printf("connect client failed\n");
         //close(sa);
-        thread_pool[arg->i].using = 0;
+        thread_pool[self].using = 0;
         pthread_exit(1);
     }
     //close(sa);
     printf("Connection established!\n");
     //Real connection to client established
+    pthread_create(&send_and_listen, NULL, (void *)listen_thread, &self);
+    
     while (1) {
-        bytes = read(s, buf, BUF_SIZE); //get cmd from client
+        bytes = read(thread_pool[self].s, buf, BUF_SIZE); //get cmd from client
         //printf("%d\n", bytes);
         if (bytes <= 0) {
             continue;
         }
         else if (!strcmp(buf, "DISC")) {
-            close(s);
+            close(thread_pool[self].s);
             printf("Client disconnected\n");
-            thread_pool[arg->i].using = 0;
+            thread_pool[self].using = 0;
             pthread_exit(0);
         }
         else if (!strcmp(buf, "TIME")) {
             memset(buf, 0, sizeof(buf));
             get_sys_time(buf);
-            write(s, buf, sizeof(buf));
+            write(thread_pool[self].s, buf, sizeof(buf));
         }
         else if (!strcmp(buf, "NAME")) {
             memset(buf, 0, sizeof(buf));
             if (!gethostname(buf, BUF_SIZE)) {
-                write(s, buf, sizeof(buf));
+                write(thread_pool[self].s, buf, sizeof(buf));
             }
             else {
                 printf("Get hostname error\n");
@@ -132,16 +158,27 @@ void server_thread(struct thread_param *arg) {
                               *(thread_pool[i].h)->h_addr_list,
                               tmp, sizeof(tmp));
                     memcpy(buf+3, tmp, BUF_SIZE-3);
-                    write(s, buf, BUF_SIZE);
+                    write(thread_pool[self].s, buf, BUF_SIZE);
                 }
                 else {
-                    write(s, "NONE", BUF_SIZE);
+                    write(thread_pool[self].s, "NONE", BUF_SIZE);
                 }
             }
            
         }
         else if (!strcmp(buf, "SEND")) {
-            //
+            write(thread_pool[self].s, "PARAM", 6);
+            read(thread_pool[self].s, &ch, 2);
+            i = ch - '0';
+            if (thread_pool[i].using) {
+                thread_pool[self].send_src = 1;
+                thread_pool[i].send_target = 1;
+
+            }
+            else {
+                printf("Inactive client num!\n");
+                continue;
+            }
         }
         else {
             continue;
