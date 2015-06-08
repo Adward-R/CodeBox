@@ -143,7 +143,7 @@ int main() {
                 
                 setsockopt(_s, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 
-                channel.sin_port = htons(DEFAULT_PORT + 1);
+                channel.sin_port = htons(DEFAULT_PORT + 2);
                 b = bind(_s, (struct socketaddr *)&channel, sizeof(channel));
                 if (b < 0) {
                     printf("bind failed\n");
@@ -175,7 +175,7 @@ int main() {
                 setsockopt(_s, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
                 //fcntl(_s, F_SETFL, O_NONBLOCK); //set non-blocked socket
                 
-                channel.sin_port = htons(DEFAULT_PORT - 1);
+                channel.sin_port = htons(DEFAULT_PORT - 2);
                 b = bind(_s, (struct socketaddr *)&channel, sizeof(channel));
                 if (b < 0) {
                     printf("n bind failed\n");

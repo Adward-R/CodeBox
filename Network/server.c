@@ -23,6 +23,7 @@ struct {
     int using; //1 for using
     struct hostent *h;
     int s; //socket
+    int ns; //non-block socket
     int in_critical;
     int send_target;
     int send_src;
@@ -49,21 +50,42 @@ void get_sys_time(char *buf) {
 
 void listen_thread(int *arg) {
     int self = *arg;
+    int bytes;
+    char ch;
     printf("Daemon started\n");
     while (thread_pool[self].using) {
-        if (thread_pool[self].send_target) {
-            if (shared) { //has anything to read
-                write(thread_pool[self].s, &shared, 2);
-                shared = 0;
-            }
-        }
-        else if (thread_pool[self].send_src) {
+        if (thread_pool[self].send_src) {
+            //printf("conn %d be set as send src\n", self);
             if (!shared) {
-                read(thread_pool[self].s, &shared, 2);
+                if ((bytes = read(thread_pool[self].ns, &ch, 2))>=0) {
+                    shared = ch;
+                    if (ch=='\n') { //end of message
+                        thread_pool[self].send_src = 0;
+                    }
+                    //read(thread_pool[self].ns, &shared, 2);
+                    //printf("shared= %c\n", shared);
+                }
             }
 
         }
+        //if (thread_pool[self].in_critical) {
+        //    usleep(30000);
+        //    continue;
+        //}
+        if (thread_pool[self].send_target) {
+            //printf("conn %d be set as send target\n", self);
+            if (shared) { //has anything to read
+                if (shared!='\n') {
+                    write(thread_pool[self].ns, &shared, 2);
+                }
+                else {
+                    thread_pool[self].send_target = 0;
+                }
+                shared = 0;
+            }
+        }
     }
+    printf("listen_thread exiting...\n");
     pthread_exit(0);
 }
 
@@ -74,8 +96,10 @@ void server_thread(struct thread_param *arg) {
     char ch;
     struct sockaddr_in channel; //holds IP address
     pthread_t send_and_listen;
+
+    printf("thread num (self) %d\n", self);
     
-    thread_pool[self].h = gethostbyaddr(&(arg->peer_addr).sin_addr, 4, AF_INET);
+    thread_pool[self].h = gethostbyaddr(&(arg->peer_addr).sin_addr, sizeof((arg->peer_addr).sin_addr), AF_INET);
     if (thread_pool[self].h < 0) {
         printf("gethostbyaddr failed\n");
         //close(sa);
@@ -97,11 +121,23 @@ void server_thread(struct thread_param *arg) {
            (thread_pool[self].h)->h_addr,
            (thread_pool[self].h)->h_length);
     
-    //connect back to client on one of default ports
-    channel.sin_port = htons(DEFAULT_PORT + 1);
+    //connect back to client on default port 12346
+    channel.sin_port = htons(DEFAULT_PORT + 1 + self);
     c = connect(thread_pool[self].s, (struct sockaddr *)&channel, sizeof(channel));
     if (c < 0) {
-        printf("connect client failed\n");
+        printf("connect client failed with exit code 0\n");
+        //close(sa);
+        thread_pool[self].using = 0;
+        pthread_exit(1);
+    }
+    
+    //connect back to client on non-block default port 12344
+    channel.sin_port = htons(DEFAULT_PORT - 1 - self);
+    thread_pool[self].ns = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    //fcntl(thread_pool[self].ns, F_SETFL, O_NONBLOCK); //set non-blocked socket
+    c = connect(thread_pool[self].ns, (struct sockaddr *)&channel, sizeof(channel));
+    if (c < 0) {
+        printf("connect client failed with exit code 1\n");
         //close(sa);
         thread_pool[self].using = 0;
         pthread_exit(1);
@@ -109,10 +145,14 @@ void server_thread(struct thread_param *arg) {
     //close(sa);
     printf("Connection established!\n");
     //Real connection to client established
+    
+    //create a new thread to transfer buffered char
     pthread_create(&send_and_listen, NULL, (void *)listen_thread, &self);
     
     while (1) {
+        thread_pool[self].in_critical = 0;
         bytes = read(thread_pool[self].s, buf, BUF_SIZE); //get cmd from client
+        thread_pool[self].in_critical = 1;
         //printf("%d\n", bytes);
         if (bytes <= 0) {
             continue;
@@ -171,9 +211,9 @@ void server_thread(struct thread_param *arg) {
             read(thread_pool[self].s, &ch, 2);
             i = ch - '0';
             if (thread_pool[i].using) {
+                shared = 0;
                 thread_pool[self].send_src = 1;
                 thread_pool[i].send_target = 1;
-
             }
             else {
                 printf("Inactive client num!\n");
