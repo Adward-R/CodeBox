@@ -12,8 +12,10 @@
 
 #define BUF_SIZE 4096 //block transfer size
 #define QUEUE_SIZE 10
-#define DEFAULT_PORT 12345
-#define MAX_PORTS 10
+#define DEFAULT_PORT 12345 //waiting for clients' initial connect
+#define MAX_PORTS 10 //actually 20 at the same time, 2 for each thread
+#define NUM_AND_IPV4_ADDR_LEN 18
+#define MAX_PORT_LEN 5 //no more than 65535
 
 int sa; //default socket of server
 char shared; //shared memory in SEND
@@ -75,12 +77,10 @@ void listen_thread(int *arg) {
         if (thread_pool[self].send_target) {
             //printf("conn %d be set as send target\n", self);
             if (shared) { //has anything to read
-                if (shared!='\n') {
-                    write(thread_pool[self].ns, &shared, 2);
-                }
-                else {
+                if (shared=='\n') {
                     thread_pool[self].send_target = 0;
                 }
+                write(thread_pool[self].ns, &shared, 2);
                 shared = 0;
             }
         }
@@ -95,6 +95,8 @@ void server_thread(struct thread_param *arg) {
     char buf[BUF_SIZE], tmp[BUF_SIZE];
     char ch;
     struct sockaddr_in channel; //holds IP address
+    struct sockaddr_in addr; //holds getsockname's return value
+    socklen_t addr_len; //holds getsockname's return addr length
     pthread_t send_and_listen;
 
     printf("thread num (self) %d\n", self);
@@ -198,6 +200,14 @@ void server_thread(struct thread_param *arg) {
                               *(thread_pool[i].h)->h_addr_list,
                               tmp, sizeof(tmp));
                     memcpy(buf+3, tmp, BUF_SIZE-3);
+
+                    addr_len = BUF_SIZE;
+                    getsockname(thread_pool[i].ns, (struct sockaddr *) &addr, &addr_len);
+                    buf[NUM_AND_IPV4_ADDR_LEN] = ':';
+                    memset(tmp, 0, sizeof(buf));
+                    sprintf(tmp, "%d", addr.sin_port);
+                    memcpy(buf+NUM_AND_IPV4_ADDR_LEN+1, tmp, MAX_PORT_LEN);
+
                     write(thread_pool[self].s, buf, BUF_SIZE);
                 }
                 else {
@@ -224,12 +234,7 @@ void server_thread(struct thread_param *arg) {
             continue;
         }
         
-    }
-    
-    
-    
-    
-    
+    } 
 }
 
 int main(){
