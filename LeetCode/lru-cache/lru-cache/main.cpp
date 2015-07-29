@@ -16,9 +16,9 @@ private:
     struct CacheBlock{
         int key;
         int value;
-        int dist;
-        CacheBlock(): key(0), value(0), dist(0) {};
-        CacheBlock(int key, int value): key(key), value(value), dist(0) {};
+        //int dist;
+        CacheBlock(): key(0), value(0) {};
+        CacheBlock(int key, int value): key(key), value(value) {};
     };
     vector<CacheBlock> *cache;
     int capacity;
@@ -36,10 +36,14 @@ public:
         vector<CacheBlock>::iterator iter = cache->begin();
         int foundValue = -1;
         for (; iter!=cache->end(); iter++) {
-            iter->dist ++;
+            //iter->dist ++;
             if (key == iter->key) {
                 foundValue = iter->value;
-                iter->dist = 0;
+                //iter->dist = 0;
+                int foundKey = iter->key;
+                cache->erase(iter);
+                cache->push_back(*new CacheBlock(foundKey, foundValue));
+                break;
             }
         }
         return foundValue;
@@ -49,22 +53,25 @@ public:
         vector<CacheBlock>::iterator iter = cache->begin();
         bool found = false;
         for (; iter!=cache->end(); iter++) {
-            iter->dist ++;
+            //iter->dist ++;
             if (key == iter->key) {
                 found = true;
-                iter->dist = 0;
-                iter->value = value;
+                //iter->dist = 0;
+                cache->erase(iter);
+                cache->push_back(*new CacheBlock(key, value));
+                break;
             }
         }
         if (!found) { //need to insert new key
             if (capacity == cache->size()) { //full
-                vector<CacheBlock>::iterator lruPtr = cache->begin();
+                /*vector<CacheBlock>::iterator lruPtr = cache->begin();
                 for (iter=cache->begin(); iter!=cache->end(); iter++) {
                     if (iter->dist > lruPtr->dist) {
                         lruPtr = iter;
                     }
                 }
-                cache->erase(lruPtr);
+                cache->erase(lruPtr);*/
+                cache->erase(cache->begin());
             }
             cache->push_back(*new CacheBlock(key, value));
         }
@@ -91,5 +98,7 @@ int main(int argc, const char * argv[]) {
     lruCache.set(3, 3);
     lruCache.set(6,-6);
     lruCache.display();
+    cout << "get: " << lruCache.get(3) << endl;
+    cout << "get: " << lruCache.get(0) << endl;
     return 0;
 }
