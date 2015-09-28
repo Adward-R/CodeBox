@@ -1,7 +1,5 @@
 __author__ = 'Adward'
 
-__author__ = 'Adward'
-
 class TreeNode(object):
      def __init__(self, x):
          self.val = x
@@ -31,7 +29,7 @@ class Solution(object):
         leng = len(nums)
         if leng == 0:
             return None
-        if leng == 1:
+        elif leng == 1:
             return TreeNode(nums[0])
         else:
             mid = int(leng/2)
