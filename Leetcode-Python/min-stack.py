@@ -1,4 +1,10 @@
 __author__ = 'Adward'
+#if we push X and Y in order to the stack, and Y > X,
+# then Y will never be the result of getMin()
+# because if so, then X has been poped
+# but if it is the case, then Y is poped before X
+# contradicted.
+# so we don't have to push Y into self.minstk for that reason
 class MinStack(object):
     def __init__(self):
         """
