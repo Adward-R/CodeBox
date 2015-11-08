@@ -6,35 +6,6 @@ class Solution(object):
         :type s: str
         :rtype: int
         """
-        #isMulMode =
-        '''
-        prevOp = '+'
-        sum = 0
-        tmpNum = 0
-        mulNum = 0
-        for ch in s:
-            if ch != ' ':
-                if ch.isdigit():
-                    tmpNum = tmpNum * 10 + int(ch)
-                else:
-                    if mulNum == 1:
-                        mulNum = tmpNum
-                    tmpNum = 0
-                    if ch == '+' or ch == '-':
-                        if prevOp == '+':
-                            sum += mulNum
-                        else:
-                            sum -= mulNum
-                        mulNum = 0
-                        prevOp = ch
-                    else: # mul & div
-                        if ch == '*':
-                            mulNum *= tmpNum
-                        else:
-                            mulNum = int(mulNum/tmpNum)
-
-        return sum
-        '''
         lst = []
         tmpNum = 0
         for ch in s:
