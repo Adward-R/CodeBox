@@ -18,13 +18,15 @@ class Solution(object):
             sleng = len(str(ssum))
             if leng - idxLst[-1] == 0:
                 return True
-            elif leng-idxLst[-1] < sleng:
-                return False
+            #elif leng-idxLst[-1] < sleng:
+            #    return False
             elif int(num[idxLst[-1]:idxLst[-1]+sleng]) == ssum:
                 idxLst.append(idxLst[-1]+sleng)
             else:
                 idxLst = idxLst[0:3]
-                while True:
+                seg1 = '01'
+                seg2 = '01'
+                while str(int(seg1)) != seg1 or str(int(seg2)) != seg2:
                     idxLst[-1] += 1
                     if idxLst[-1] >= leng:
                         idxLst.pop()
@@ -32,8 +34,8 @@ class Solution(object):
                         idxLst.append(idxLst[-1]+1)
                         if idxLst[-1] >= leng:
                             return False
-                    if num[idxLst[0]:idxLst[1]][0]!='0' and num[idxLst[1]:idxLst[2]][0]!='0':
-                        break
+                    seg1 = num[idxLst[0]:idxLst[1]]
+                    seg2 = num[idxLst[1]:idxLst[2]]
 
 sol = Solution()
-print(sol.isAdditiveNumber('112358'))
+print(sol.isAdditiveNumber("12012122436"))
