@@ -16,13 +16,42 @@ from django.contrib.auth.decorators import login_required
 #from django.utils import json
 from django.http import JsonResponse
 import random
+import json
+import sqlite3
+from js_ex_01.models import WeiboData
 
 def home(request):
     t = get_template('index.html')
     return HttpResponse(t.render())
 
-def get_rand_img(request):
+def insertData(request): #called once
+    XRANGE = 24
+    print(os.listdir(os.path.dirname(__file__)))
+    path = os.path.join(os.path.dirname(__file__), 'weibo.json')
+    with open(path) as f:
+        data = json.load(f)
+    print(data['children'][0])
+    for dataset in data['children']:
+        set_idx = dataset['name']
+        for i in range(XRANGE):
+            row = dataset['children'][i]
+            record = WeiboData(index=set_idx*XRANGE+i,
+                               level1=row['level0'],
+                               level2=row['level1'],
+                               level3=row['level2'])
+            record.save()
+    return HttpResponse()
+
+def get_chart_data(request):
+    XRANGE = 24
     tab_id = request.GET.get('tab_id')
-    tabn = sum([int(i) for i in tab_id.split('-')[1:]])
-    fname = str((int(random.random() * 100) + tabn) % 5 + 1) + '.jpg'
-    return JsonResponse({'img_link': '/static/' + fname})
+    tabn = 0
+    for i in tab_id.split('-')[1:]:
+        tabn = tabn * 10 + int(i)
+    set_idx = int(random.random() * 10 * tabn) % 100
+    #set_idx = 5
+    chart_data = []
+    for i in range(set_idx*XRANGE, (set_idx+1)*XRANGE):
+        obj = WeiboData.objects.get(index=i)
+        chart_data.append([obj.level1, obj.level2, obj.level3])
+    return JsonResponse({'cdata': chart_data})

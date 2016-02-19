@@ -20,5 +20,6 @@ from js_ex_01 import views
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.home),
-    url(r'^get_rand_img/$', views.get_rand_img),
+    url(r'^get_chart_data/$', views.get_chart_data),
+    url(r'^insert_raw_data/', views.insertData), #has run once
 ]
