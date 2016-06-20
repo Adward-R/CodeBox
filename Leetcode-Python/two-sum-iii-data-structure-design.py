@@ -8,13 +8,17 @@ class TwoSum(object):
         initialize your data structure here
         """
         self.numbers = []
+        self.toSort = False
 
     def add(self, number):
         """
         Add the number to an internal data structure.
         :rtype: nothing
         """
-        self.numbers.insert(bisect.bisect_right(self.numbers, number), number)
+        # self.numbers.insert(bisect.bisect_right(self.numbers, number), number)
+        if len(self.numbers) > 0 and self.numbers[-1] > number:
+            self.toSort = True
+        self.numbers.append(number)
 
     def find(self, value):
         """
@@ -22,6 +26,9 @@ class TwoSum(object):
         :type value: int
         :rtype: bool
         """
+        if self.toSort:
+            self.numbers.sort()
+            self.toSort = False
         if len(self.numbers) < 2 \
                 or value < self.numbers[0] + self.numbers[1] \
                 or value > self.numbers[-1] + self.numbers[-2]:
