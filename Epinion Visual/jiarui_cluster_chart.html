@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!-- COLORS ARE NOT PERFECT YET. TOOLTIP NEEDS WORK-->
+<meta charset="utf-8">
+<head>
+    <style>
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        #chart{
+            text-align: center;
+            width: 60%;
+            height: 500px;
+        }
+    </style>
+
+    <link rel="stylesheet" href="./lib/jquery-ui.min.css">
+    <link rel="stylesheet" href="./lib/bootstrap.min.css">
+    <script src="./lib/jquery.min.js"></script>
+    <script src="./lib/jquery-ui.min.js"></script>
+    <script src="./lib/d3.min.js"></script>
+</head>
+
+<body>
+<div class="page-header">
+    <h2> <a href="jiarui_vis.html"> Loved Movie Eras Of Each Age Periods </a> <small> by Jiarui Yang </small></h2>
+    <form>
+        <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-default">
+                <input id="click_1" type="radio" name="sel" value="true" checked="true"> Length representation
+            </label>
+            <label class="btn btn-default">
+                <input id="click_2" type="radio" name="sel" value="false"> Angle representation
+            </label>
+        </div>
+    </form>
+</div>
+<div class="container" style="width: 90%;">
+    <div id='chart' ></div>
+</div>
+
+<script src="lib/d3.min.js" charset="utf-8"></script>
+<script src="lib/clusterpurityChart.js"></script>
+
+<script>
+
+    var obj;
+
+    d3.json('data/cluster_jiarui.json',function(error,data){
+        obj = d3.clusterpuritychart().containerID('chart').noOfCategories(4).fixAngleLayout(true);
+        d3.select('#chart').append('svg').datum(data).call(obj);
+    });
+
+    d3.select('#click_1').on('click',clickFun);
+    d3.select('#click_2').on('click',clickFun);
+
+    function clickFun(){
+        obj.change(document.getElementById('click_1').checked);
+    }
+
+</script>
+

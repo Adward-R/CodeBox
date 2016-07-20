@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        margin: auto;
+        position: relative;
+        width: 960px;
+    }
+
+    text {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    form {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+    }
+
+    .node {
+        stroke: #fff;
+        stroke-width: 1.5px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-opacity: .6;
+    }
+
+    path.slice{
+        stroke-width:2px;
+    }
+
+    polyline{
+        opacity: .3;
+        stroke: black;
+        stroke-width: 2px;
+        fill: none;
+    }
+
+    #slider {
+        float: left;
+        clear: left;
+        height: 300px;
+        margin: 15px;
+    }
+
+</style>
+<form>
+    <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-default">
+            <input type="radio" name="mode" value="grouped"> Grouped
+        </label>
+        <label class="btn btn-default">
+            <input type="radio" name="mode" value="stacked" checked> Stacked
+        </label>
+    </div>
+</form>
+<head>
+    <link rel="stylesheet" href="./lib/jquery-ui.min.css">
+    <link rel="stylesheet" href="./lib/bootstrap.min.css">
+    <script src="./lib/jquery.min.js"></script>
+    <script src="./lib/jquery-ui.min.js"></script>
+    <script src="./lib/d3.min.js"></script>
+
+    <script>
+
+        var genres = ["Action", "Adventure", "Animation", "Children's", "Comedy", "Crime",
+            "Documentary", "Drama", "Fantasy", "Film-Noir", "Horror", "Musical",
+            "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"];
+        var ratings = ["dislike", "so-so", "like-it"];
+
+        var margin = {top: 20, right: 100, bottom: 20, left: 0},
+                bar_width = 800 - margin.left - margin.right,
+                bar_height = 500,// - margin.top - margin.bottom;
+                pie_width = 300,
+                pie_height = 300,
+                radius = Math.min(pie_width, pie_height) / 2;
+
+        var n = 3, // number of layers
+                m = 18, // number of samples per layer
+                yGroupMax,
+                yStackMax,
+                stack,
+                layers,
+                num = 4;
+        var inspect; //to get the redrawing function of donut chart
+
+        // 	 var selGenre, selRate;
+
+        d3.json("data/stacked_bar_jiarui.json",function(error,root){
+
+            stack = d3.layout.stack();
+            layers = stack(d3.range(n).map(function(idx) { return dataAdapter(idx, m, .1); }));
+            yGroupMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); });
+            yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+
+            var x = d3.scale.ordinal()
+                    .domain(d3.range(m))
+                /*					   .domain(["Action", "Adventure", "Animation", "Children's", "Comedy", "Crime",
+                 "Documentary", "Drama", "Fantasy", "Film-Noir", "Horror", "Musical",
+                 "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"])
+                 */
+                    .rangeRoundBands([0, bar_width], .08);
+
+            var y = d3.scale.linear()
+                    .domain([0, yStackMax])
+                    .range([bar_height, 0]);
+
+            var color = d3.scale.linear()
+                    .domain([0, n - 1])
+                    .range(["#98abc5", "#d0743c", "#ff8c00"]);
+
+            var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .tickSize(0)
+                    .tickPadding(6)
+                    .orient("bottom");
+
+            var svg = d3.select("body").append("svg")
+                    .attr("width", bar_width + 500)
+                    .attr("height", bar_height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("id","haha")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var layer = svg.selectAll(".layer")
+                    .data(layers)
+                    .enter().append("g")
+                    .attr("class", "layer")
+                    .style("fill", function(d, i) { return color(i); });
+
+
+            var rect = layer.selectAll("rect")
+                    .data(function(d) { return d; })
+                    .enter().append("rect")
+                    .attr("x", function(d) { return x(d.x); })
+                    .attr("y", bar_height)
+                    .attr("width", x.rangeBand())
+                    .attr("height", 0);
+
+            d3.selectAll("rect")
+//			.attr("id", function(val, idx, array) {return "rect-"+idx;})
+                    .on("click", function(val, idx, array) { inspect((idx % 18)*3 + parseInt(idx/18)); })
+                    .on("mouseover", function(val, idx, array) {
+                        document.getElementById("genre").innerHTML = genres[idx % 18];
+                        document.getElementById("rate").innerHTML = ratings[parseInt(idx/18)];
+                    });
+
+            /*rect.transition()
+             .delay(function(d, i) { return i * 10; })
+             .attr("y", function(d) { return y(d.y0 + d.y); })
+             .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });*/
+
+            svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + bar_height + ")")
+                    .call(xAxis);
+
+            d3.selectAll("input").on("change", change);
+
+            //d3.selectAll($("#slide")).on("slide",function() {console.log("HI")} );
+
+            var timeout = setTimeout(function() {
+                d3.select("input[value=\"grouped\"]").property("checked", true).each(change);
+            }, 2000);
+
+            function change() {
+                //clearTimeout(timeout);
+                if (this.value === "grouped") transitionGrouped();
+                else transitionStacked();
+            }
+
+            function transitionGrouped() {
+                y.domain([0, yGroupMax]);
+
+                rect.transition()
+                        .duration(500)
+                        .delay(function(d, i) { return i * 10; })
+                        .attr("x", function(d, i, j) { return x(d.x) + x.rangeBand() / n * j; })
+                        .attr("width", x.rangeBand() / n)
+                        .transition()
+                        .attr("y", function(d) { return y(d.y); })
+                        .attr("height", function(d) { return bar_height - y(d.y); });
+            }
+
+            function transitionStacked() {
+                y.domain([0, yStackMax]);
+
+                rect.transition()
+                        .duration(500)
+                        .delay(function(d, i) { return i * 10; })
+                        .attr("y", function(d) { return y(d.y0 + d.y); })
+                        .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+                        .transition()
+                        .attr("x", function(d) { return x(d.x); })
+                        .attr("width", x.rangeBand());
+            }
+
+            function dataAdapter(idx, n, o) {
+                var a = [], i;
+                for (i = 0; i < n; ++i) a[i] = i;
+                if (idx==0) {
+                    return a.map(function(d, i) { return {x: i, y: root[i][0]}; });}
+                else if (idx==1){return a.map(function(d, i) { return {x: i, y: root[i][1]}; });}
+                else {return a.map(function(d, i) { return {x: i, y: root[i][2]}; });}
+            }
+
+            d3.json("data/donut_jiarui.json",function(error,root){
+                var svg = d3.select("svg")
+                        .append("g")
+                        .attr("id","piechart");
+
+
+                inspect = function change(num) {
+                    svg = d3.select("#piechart")
+                            .attr("width", pie_width)
+                            .attr("height", pie_height)
+                            .attr("transform", "translate(" + (pie_width/2 + 700) + "," + (pie_height/2) + ")");
+
+                    svg.append("g")
+                            .attr("class", "slices");
+                    svg.append("g")
+                            .attr("class", "labels");
+                    svg.append("g")
+                            .attr("class", "lines");
+
+                    var pie = d3.layout.pie()
+                            .sort(null)
+                            .value(function(d) { return d.value; });
+
+                    var arc = d3.svg.arc()
+                            .outerRadius(radius * 0.8)
+                            .innerRadius(radius * 0.4);
+
+                    var outerArc = d3.svg.arc()
+                            .innerRadius(radius * 0.9)
+                            .outerRadius(radius * 0.9);
+
+//             svg.attr("transform", "translate(" + pie_width / 2 + "," + pie_height / 2 + ")");
+
+                    var key = function(d){ return d.data.label; };
+
+                    var color = d3.scale.ordinal()
+                            .domain(["Under-18", "18-24", "25-34", "35-44", "45-49", "50-55", "56+"])
+                            .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+                    ////////////////////
+
+                    var data = color.domain().map(function(label,i){
+                        return { label: label, value: root[num][i] }
+                    });
+                    
+                    console.log(data);
+
+                    /* ------- PIE SLICES -------*/
+                    var slice = svg.select(".slices").selectAll("path.slice")
+                            .data(pie(data), key);
+
+                    slice.enter()
+                            .insert("path")
+                            .style("fill", function(d) { return color(d.data.label); })
+                            .attr("class", "slice");
+
+                    slice
+                            .transition().duration(400)
+                            .attrTween("d", function(d) {
+                                this._current = this._current || d;
+                                var interpolate = d3.interpolate(this._current, d);
+                                this._current = interpolate(0);
+                                return function(t) {
+                                    return arc(interpolate(t));
+                                };
+                            })
+
+                    slice.exit()
+                            .remove();
+
+                    /* ------- TEXT LABELS -------*/
+
+                    var text = svg.select(".labels").selectAll("text")
+                            .data(pie(data), key);
+
+                    text.enter()
+                            .append("text")
+                            .attr("dy", ".35em")
+                            .text(function(d) {
+                                return d.data.label;
+                            });
+
+                    function midAngle(d){
+                        return d.startAngle + (d.endAngle - d.startAngle)/2;
+                    }
+
+                    text.transition().duration(400)
+                            .attrTween("transform", function(d) {
+                                this._current = this._current || d;
+                                var interpolate = d3.interpolate(this._current, d);
+                                this._current = interpolate(0);
+                                return function(t) {
+                                    var d2 = interpolate(t);
+                                    var pos = outerArc.centroid(d2);
+                                    pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
+                                    return "translate("+ pos +")";
+                                };
+                            })
+                            .styleTween("text-anchor", function(d){
+                                this._current = this._current || d;
+                                var interpolate = d3.interpolate(this._current, d);
+                                this._current = interpolate(0);
+                                return function(t) {
+                                    var d2 = interpolate(t);
+                                    return midAngle(d2) < Math.PI ? "start":"end";
+                                };
+                            });
+
+                    text.exit()
+                            .remove();
+
+                    /* ------- SLICE TO TEXT POLYLINES -------*/
+
+                    var polyline = svg.select(".lines").selectAll("polyline")
+                            .data(pie(data), key);
+
+                    polyline.enter()
+                            .append("polyline");
+
+                    polyline.transition().duration(400)
+                            .attrTween("points", function(d){
+                                this._current = this._current || d;
+                                var interpolate = d3.interpolate(this._current, d);
+                                this._current = interpolate(0);
+                                return function(t) {
+                                    var d2 = interpolate(t);
+                                    var pos = outerArc.centroid(d2);
+                                    pos[0] = radius * 0.95 * (midAngle(d2) < Math.PI ? 1 : -1);
+                                    return [arc.centroid(d2), outerArc.centroid(d2), pos];
+                                };
+                            });
+
+                    polyline.exit()
+                            .remove();
+
+
+                };
+                inspect(0);
+                //end of donut chart
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+<div class="page-header">
+    <h2> <a href="jiarui_cluster_chart.html"> Epinion Visualization </a> <small> by Jiarui Yang </small></h2>
+</div>
+<div class="container" style="width: 90%;">
+    <ul class="list-group">
+        <li class="list-group-item">
+            <span class="badge" id="rate">so-so</span>
+            <a id="genre"> Cras justo odio </a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>
+
+
