@@ -24,7 +24,7 @@ class Solution(object):
                 p = p.children[idx]
             p.check = True
 
-    def wordBreak(self, s, wordDict):
+    def wordBreak2(self, s, wordDict):
         """
         :type s: str
         :type wordDict: Set[str]
@@ -66,6 +66,20 @@ class Solution(object):
             trie.insert(word)
         tmpResults = [None] * len(s) + [True]
         return wBreak(s, 0, trie, tmpResults)
+
+    def wordBreak(self, s, wordDict):
+        """
+        :type s: str
+        :type wordDict: Set[str]
+        :rtype: bool
+        """
+        avail = [True] + [False] * len(s)
+        for i in range(1, len(s)+1):
+            for j in range(i):
+                if avail[j] and s[j:i] in wordDict:
+                    avail[i] = True
+                    break
+        return avail[-1]
 
 sol = Solution()
 t = time()
