@@ -48,7 +48,7 @@ class Solution(object):
                     break
                 else:
                     p = p.children[idx]
-                i += 1
+                i += 11
 
             flag = True
             for j in range(len(probableIs)-1, -1, -1):
