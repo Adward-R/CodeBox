@@ -46,12 +46,37 @@ class Solution(object):
                     roots[-1].right = rright
         return roots
 
-    def generateTrees(self, n):
+    def generateTrees0(self, n):
         """
         :type n: int
         :rtype: List[TreeNode]
         """
         return self.copyTrees(n, 0)
+
+    def generateTrees(self, n):
+        """
+        :type n: int
+        :rtype: List[TreeNode]
+        """
+        dp = [[[] for j in range(n)] for i in range(n)]  # dp[i][j] <= helper(i+1, j+1)
+
+        def helper(s, e):  # rtype: List[TreeNode]
+            if s > e:
+                return [None]
+            elif dp[s-1][e-1]:
+                return dp[s-1][e-1]
+            ret = []
+            for rval in range(s, e+1):
+                for left in helper(s, rval-1):
+                    for right in helper(rval+1, e):
+                        root = TreeNode(rval)
+                        root.left = left
+                        root.right = right
+                        ret.append(root)
+            dp[s-1][e-1] = ret
+            return ret
+
+        return helper(1, n) if n else []
 
 sol = Solution()
 cnt = 0
