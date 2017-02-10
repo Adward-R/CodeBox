@@ -38,45 +38,37 @@ def binTreeBuild(nodesLst):
         return head
 
 class BSTIterator(object):
-    def flatten(self, root):
-        if not root:
-            return []
-        if root.left:
-            if root.right:
-                return self.flatten(root.left) + [root.val] + self.flatten(root.right)
-            else:
-                return self.flatten(root.left) + [root.val]
-        else:
-            if root.right:
-                return [root.val] + self.flatten(root.right)
-            else:
-                return [root.val]
-
     def __init__(self, root):
         """
         :type root: TreeNode
         """
-        self.ascendList = self.flatten(root)
+        self.stk = []
+        p = root
+        while p and p.left:
+            self.stk.append(p)
+            p = p.left
+        self.cache = p
 
     def hasNext(self):
         """
         :rtype: bool
         """
-        if len(self.ascendList) == 0:
-            return False
-        else:
-            return True
+        return self.cache
 
     def next(self):
         """
         :rtype: int
         """
-        try:
-            theNext = self.ascendList[0]
-        except:
-            return None
-        self.ascendList = self.ascendList[1:]
-        return theNext
+        ret = self.cache.val
+        if self.cache.right:
+            p = self.cache.right
+            while p.left:
+                self.stk.append(p)
+                p = p.left
+            self.cache = p
+        else:
+            self.cache = self.stk.pop() if len(self.stk) else None
+        return ret
 
 root = binTreeBuild('{6,4,8,1,5,7,9}')
 it = BSTIterator(root)
