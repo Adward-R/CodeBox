@@ -5,6 +5,39 @@ class Solution(object):
         :type s: str
         :rtype: List[str]
         """
+        valid_ips = []
+        cur_ip = []
+        n = len(s)
+
+        def valid_section(start, end):
+            if start > end:
+                return False
+            if s[start] == '0' and start != end:
+                return False
+            if end - start > 1 and int(s[start:end + 1]) >= 256:
+                return False
+            return True
+
+        def backTracking(start):
+            if len(cur_ip) == 3:
+                if valid_section(start, n - 1):
+                    valid_ips.append('.'.join(cur_ip + [s[start:]]))
+                return
+
+            for end in range(start, min(n, start + 3)):
+                if valid_section(start, end):
+                    cur_ip.append(s[start:end + 1])
+                    backTracking(end + 1)
+                    cur_ip.pop()
+
+        backTracking(0)
+        return valid_ips
+
+    def restoreIpAddresses0(self, s):
+        """
+        :type s: str
+        :rtype: List[str]
+        """
         leng = len(s)
         if leng > 12 or leng < 4:
             return []
