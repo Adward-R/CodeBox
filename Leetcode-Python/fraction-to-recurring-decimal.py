@@ -1,5 +1,42 @@
 __author__ = 'Adward'
 class Solution(object):
+    def fractionToDecimal(self, numerator, denominator):
+        """
+        :type numerator: int
+        :type denominator: int
+        :rtype: str
+        """
+        if numerator == 0:
+            return '0'
+        ans = []  # perform as string builder
+        if (numerator > 0) ^ (denominator > 0):
+            ans.append('-')
+        up, down = abs(numerator), abs(denominator)  # here if Java or C++, convert to (long)
+        ans.append(str(up // down))
+        if up % down == 0:
+            return ''.join(ans)
+
+        # fraction cases start
+        indexes = {}
+        ans.append('.')
+        up %= down
+        indexes[up] = len(ans)
+        while up != 0:
+            up *= 10
+            ans.append(str(up // down))
+            up %= down
+            if up not in indexes:
+                indexes[up] = len(ans)
+            else:
+                last_ind = indexes[up]
+                ans.insert(last_ind, '(')
+                ans.append(')')
+                break
+        return ''.join(ans)
+
+
+
+class Solution1(object):
     def gcd(self, numerator, denominator):
         rev = False
         if denominator > numerator:
@@ -62,45 +99,45 @@ class Solution(object):
                 ss = '-' + ss
             return ss
         elif self.timesOf2and5(denominator):
-        	intPart = int(numerator/denominator)
-        	numerator -= intPart * denominator
-        	ss = self.decimalGen(numerator, denominator, 31)
-        	lastZero = 30
-        	while ss[lastZero] == '0':
-        		lastZero -= 1
-        	ss = str(intPart) + '.' + ss[0:lastZero+1]
-        	if flag == -1:
-        		ss = '-' + ss
-        	return ss
+            intPart = int(numerator/denominator)
+            numerator -= intPart * denominator
+            ss = self.decimalGen(numerator, denominator, 31)
+            lastZero = 30
+            while ss[lastZero] == '0':
+                lastZero -= 1
+            ss = str(intPart) + '.' + ss[0:lastZero+1]
+            if flag == -1:
+                ss = '-' + ss
+            return ss
         else:
             n = numerator/denominator
             #quick pass begin
             if numerator > 2147483647:
-            	intPart = int(n)
-            	numerator -= intPart * denominator
-            	ss = str(intPart)+ '.(' + self.decimalGen(numerator, denominator, 999) + ')'
-            	if flag == -1:
-            		ss = '-' + ss
-            	return ss
+                intPart = int(n)
+                numerator -= intPart * denominator
+                ss = str(intPart)+ '.(' + self.decimalGen(numerator, denominator, 999) + ')'
+                if flag == -1:
+                    ss = '-' + ss
+                return ss
             #quick pass end
 
             intPart = int(n)
             numerator -= intPart * denominator
             sLeng = 0
             while True:
-            	sLeng += 100
+                sLeng += 100
                 s = self.decimalGen(numerator, denominator, sLeng)
                 #print(s)
                 cBegin = 0
                 cLeng = 1
                 while cBegin < sLeng - 10: #len(s)
-                	#special case for cLeng==1
+                    #special case for cLeng==1
                     repeat = s[cBegin]
                     repeatFlag = True
                     for j in range(1, 11):
-                    	if s[cBegin+j] != repeat:
-                    		repeatFlag = False
-                    		break
+                        if s[cBegin+j] != repeat:
+                            repeatFlag = False
+                            break
                     if repeatFlag:
                         ss = str(intPart) + '.' + s[0:cBegin] + '(' + s[cBegin] +')'
                         if flag == -1:
@@ -112,9 +149,9 @@ class Solution(object):
 #                    print(s)	
                     repeatFlag = True
                     for j in range(1, 10):
-                    	if s[cBegin+2*j:cBegin+2*j+2] != repeat:
-                    		repeatFlag = False
-                    		break
+                        if s[cBegin+2*j:cBegin+2*j+2] != repeat:
+                            repeatFlag = False
+                            break
                     if repeatFlag:
                         ss = str(intPart) + '.' + s[0:cBegin] + '(' + s[cBegin:cBegin+2] +')'
                         if flag == -1:
@@ -131,7 +168,6 @@ class Solution(object):
                             return ss
                         else:
                             cLeng += 1
-
 
                     cLeng = 1
                     cBegin += 1
