@@ -11,17 +11,17 @@ class Solution(object):
         for s in strings:
             shamt = ord('a') - ord(s[0])
             if shamt != 0:
-                key = ''.join([
+                key = ''.join(
                     chr(ord('a') + (ord(ch) - ord('a') + shamt) % 26)
                     for ch in s
-                ])
+                )
             else:
                 key = s
             if key in groups:
                 groups[key].append(s)
             else:
                 groups[key] = [s]
-        return [groups[key] for key in groups]
+        return groups.values()
 
 sol = Solution()
 strings = ["abc", "bcd", "acef", "xyz", "az", "ba", "a", "z"]
